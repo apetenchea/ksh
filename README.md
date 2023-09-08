@@ -1,4 +1,4 @@
-<div style="text-align: center">
+<div align="center">
   <a href="https://github.com/apetenchea/ksh">
     <img src="media/logo.png" alt="Logo">
   </a>
