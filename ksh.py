@@ -22,6 +22,17 @@ def rm(path):
     device_io_ctl(CtlCode.IOCTL_KSH_REMOVE_FILE, input_buffer)
 
 
+def cp(source, dest):
+    if not source.startswith("\\"):
+        source = r"\DosDevices\{}".format(source)
+    if not dest.startswith("\\"):
+        dest = r"\DosDevices\{}".format(dest)
+    merged = f"{source}|{dest}"
+    input_buffer = ctypes.create_unicode_buffer(merged, len(merged))
+    print(input_buffer.value)
+    device_io_ctl(CtlCode.IOCTL_KSH_COPY_FILE, input_buffer)
+
+
 def main(args):
     if args.command == "test":
         test()
@@ -36,6 +47,10 @@ def main(args):
         pkill(args.pid)
     elif args.command == "rm":
         rm(args.path)
+    elif args.command == "cp":
+        cp(args.source, args.destination)
+    else:
+        raise Exception("Invalid command")
 
 
 if __name__ == "__main__":
@@ -55,5 +70,9 @@ if __name__ == "__main__":
 
     parser_rm = subparsers.add_parser("rm", help="Remove a file")
     parser_rm.add_argument("path", type=str, help="Path of the file to remove")
+
+    parser_cp = subparsers.add_parser("cp", help="Copy a file")
+    parser_cp.add_argument("source", type=str, help="Path of the file to copy")
+    parser_cp.add_argument("destination", type=str, help="Path of the destination file")
 
     main(parser.parse_args())

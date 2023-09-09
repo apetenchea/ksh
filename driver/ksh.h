@@ -3,6 +3,9 @@
 #include <ntifs.h>
 #include <windef.h>
 
+#define DEVICE_NAME L"\\Device\\KSH"
+#define DOS_DEVICE_NAME L"\\DosDevices\\KSH"
+
 // Called when the driver is loaded.
 NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegistryPath);
 // Called when the driver is unloaded.
@@ -48,5 +51,11 @@ NTSTATUS TestDriver(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
 #define IOCTL_KSH_REMOVE_FILE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x802, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
 NTSTATUS RemoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
 
-#define DEVICE_NAME L"\\Device\\KSH"
-#define DOS_DEVICE_NAME L"\\DosDevices\\KSH"
+/*
+ * Control code for copying a file.
+ * Expects the file names to be passsed as unicode strings.
+ * Both file names are passed in one string, separated by "|", e.g. "source|destination".
+ * Returns 0 on success, 1 on failure.
+ */
+#define IOCTL_KSH_COPY_FILE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x803, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+NTSTATUS CopyFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);

@@ -1,4 +1,5 @@
 #include "ksh.h"
+#include "utils.h"
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT pDriverObject, PUNICODE_STRING pRegistryPath)
 {
@@ -99,6 +100,9 @@ NTSTATUS DispatchDeviceControl(PDEVICE_OBJECT pDeviceObject, PIRP pIrp)
     case IOCTL_KSH_REMOVE_FILE:
         status = RemoveFile(pIoStackLocation, pSystemBuffer);
         break;
+    case IOCTL_KSH_COPY_FILE:
+        status = CopyFile(pIoStackLocation, pSystemBuffer);
+        break;
     default:
         status = STATUS_INVALID_PARAMETER_1;
         break;
@@ -187,4 +191,26 @@ NTSTATUS RemoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
     OBJECT_ATTRIBUTES objAttr;
     InitializeObjectAttributes(&objAttr, &uniFileName, OBJ_KERNEL_HANDLE, NULL, NULL);
     return ZwDeleteFile(&objAttr);
+}
+
+NTSTATUS CopyFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
+{
+    if (pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength == 0)
+    {
+        return STATUS_INVALID_PARAMETER_1;
+    }
+
+    FILE_PAIR_PARAM files =
+        ExtractFilePairFromBuffer((PWSTR)pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
+    if (files.First == NULL || files.Second == NULL)
+    {
+        return STATUS_INVALID_PARAMETER_1;
+    }
+
+    UNICODE_STRING uniSrc;
+    RtlInitUnicodeString(&uniSrc, files.First);
+    UNICODE_STRING uniDest;
+    RtlInitUnicodeString(&uniDest, files.Second);
+
+    return CopyFileHelper(&uniSrc, &uniDest);
 }

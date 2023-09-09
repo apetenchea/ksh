@@ -9,6 +9,7 @@ class CtlCode(IntEnum):
     IOCTL_KSH_PKILL = 0x800
     IOCTL_KSH_TEST = 0x801
     IOCTL_KSH_REMOVE_FILE = 0x802
+    IOCTL_KSH_COPY_FILE = 0x803
 
     @classmethod
     def ctl_code(cls, function):
@@ -63,5 +64,7 @@ def device_io_ctl(code, input_buffer):
     if not status or out_buffer.value != 0:
         error_code = ctypes.windll.kernel32.GetLastError()
         raise Exception(
-            f"DeviceIoControl failed! Status {status}, Output {out_buffer.value}, Code {error_code}, Message: {win32api.FormatMessage(error_code)}"
+            f"DeviceIoControl failed! Status {status},"
+            f"Output {out_buffer.value}, Code {error_code},"
+            f"Message: {win32api.FormatMessage(error_code)}"
         )
