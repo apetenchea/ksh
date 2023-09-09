@@ -103,7 +103,7 @@ At its core, the project is driven by two primary motivations:
 ## Usage
 - Check the driver status
     ```shell
-    python ksh.py
+    python ksh.py test
     ```
 - Move a file
     ```shell
@@ -119,7 +119,7 @@ At its core, the project is driven by two primary motivations:
     ```
 - Kill a process
     ```shell
-    python ksh.py pkill notepad.exe
+    python ksh.py pkill -n notepad.exe
     ```
 
 ## Contributing
