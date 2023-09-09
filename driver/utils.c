@@ -96,3 +96,10 @@ NTSTATUS CopyFileHelper(PUNICODE_STRING SourcePath, PUNICODE_STRING DestPath)
 
     return status;
 }
+
+NTSTATUS RemoveFileHelper(PUNICODE_STRING FilePath)
+{
+    OBJECT_ATTRIBUTES objAttr;
+    InitializeObjectAttributes(&objAttr, FilePath, OBJ_KERNEL_HANDLE, NULL, NULL);
+    return ZwDeleteFile(&objAttr);
+}

@@ -18,3 +18,8 @@ FILE_PAIR_PARAM ExtractFilePairFromBuffer(PWSTR Buffer, ULONG uBufferLen);
  * Copies SourcePath to DestPath.
  */
 NTSTATUS CopyFileHelper(PUNICODE_STRING SourcePath, PUNICODE_STRING DestPath);
+
+/*
+ * Remove file pointer by FilePath.
+ */
+NTSTATUS RemoveFileHelper(PUNICODE_STRING FilePath);

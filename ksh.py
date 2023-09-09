@@ -2,7 +2,7 @@ import argparse
 import ctypes
 import psutil
 
-from driver import CtlCode, device_io_ctl
+from driver import CtlCode, device_io_ctl, format_dos_device
 
 
 def test():
@@ -16,21 +16,25 @@ def pkill(pid):
 
 
 def rm(path):
-    if not path.startswith("\\"):
-        path = r"\DosDevices\{}".format(path)
+    path = format_dos_device(path)
     input_buffer = ctypes.create_unicode_buffer(path, len(path))
     device_io_ctl(CtlCode.IOCTL_KSH_REMOVE_FILE, input_buffer)
 
 
 def cp(source, dest):
-    if not source.startswith("\\"):
-        source = r"\DosDevices\{}".format(source)
-    if not dest.startswith("\\"):
-        dest = r"\DosDevices\{}".format(dest)
+    source = format_dos_device(source)
+    dest = format_dos_device(dest)
     merged = f"{source}|{dest}"
     input_buffer = ctypes.create_unicode_buffer(merged, len(merged))
-    print(input_buffer.value)
     device_io_ctl(CtlCode.IOCTL_KSH_COPY_FILE, input_buffer)
+
+
+def mv(source, dest):
+    source = format_dos_device(source)
+    dest = format_dos_device(dest)
+    merged = f"{source}|{dest}"
+    input_buffer = ctypes.create_unicode_buffer(merged, len(merged))
+    device_io_ctl(CtlCode.IOCTL_KSH_MOVE_FILE, input_buffer)
 
 
 def main(args):
@@ -49,6 +53,8 @@ def main(args):
         rm(args.path)
     elif args.command == "cp":
         cp(args.source, args.destination)
+    elif args.command == "mv":
+        mv(args.source, args.destination)
     else:
         raise Exception("Invalid command")
 
@@ -74,5 +80,9 @@ if __name__ == "__main__":
     parser_cp = subparsers.add_parser("cp", help="Copy a file")
     parser_cp.add_argument("source", type=str, help="Path of the file to copy")
     parser_cp.add_argument("destination", type=str, help="Path of the destination file")
+
+    parser_mv = subparsers.add_parser("mv", help="Move a file")
+    parser_mv.add_argument("source", type=str, help="Path of the file to move")
+    parser_mv.add_argument("destination", type=str, help="Path of the destination file")
 
     main(parser.parse_args())

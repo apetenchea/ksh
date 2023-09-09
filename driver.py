@@ -10,6 +10,7 @@ class CtlCode(IntEnum):
     IOCTL_KSH_TEST = 0x801
     IOCTL_KSH_REMOVE_FILE = 0x802
     IOCTL_KSH_COPY_FILE = 0x803
+    IOCTL_KSH_MOVE_FILE = 0x804
 
     @classmethod
     def ctl_code(cls, function):
@@ -68,3 +69,9 @@ def device_io_ctl(code, input_buffer):
             f"Output {out_buffer.value}, Code {error_code},"
             f"Message: {win32api.FormatMessage(error_code)}"
         )
+
+
+def format_dos_device(path):
+    if not path.startswith("\\"):
+        path = r"\DosDevices\{}".format(path)
+    return path
