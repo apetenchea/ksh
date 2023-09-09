@@ -3,7 +3,7 @@
     <img src="media/logo.png" alt="Logo">
   </a>
 
-<h3 align="center">Kernel Mode Shell</h3>
+<h3 align="center">Kernel Shell</h3>
   <p>
     Because your Windows machine should listen to you!
   </p>
@@ -13,7 +13,7 @@
   <summary>Contents</summary>
   <ol>
     <li>
-      <a href="#about-the-project">About</a>
+      <a href="#about">About</a>
       <ul>
         <li><a href="#motivation">Motivation</a></li>
         <li><a href="#features">Features</a></li>
@@ -28,6 +28,10 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#contributing">Contributing</a></li>
+      <ul>
+        <li><a href="#building">Building</a></li>
+        <li><a href="#formatting">Formatting</a></li>
+      </ul>
     <li><a href="#disclaimer">Disclaimer</a></li>
     <li><a href="#license">License</a></li>
   </ol>
@@ -55,3 +59,101 @@ At its core, the project is driven by two primary motivations:
     and flexibility of kernel-level operations, bypassing many of the restrictions imposed by
     user-mode utilities.
 - **Process Control:** Tools like `pkill` become more potent.
+
+## Getting Started
+
+### Prerequisites
+- Windows 10 (x64)
+- The driver is only signed with a test certificate, so you will need to enable test mode
+    on your machine. This can be done by running the following command in an elevated command prompt:
+    ```
+    bcdedit.exe -set TESTSIGNING ON
+    ```
+    Note: This will require a reboot. **In case you're using BitLocker, be sure to have your recovery key at hand.**
+- Python 3
+
+### Installation
+- Install Python requirements
+    ```shell
+    pip install -r requirements.txt
+    ```
+- Load the driver
+    ```shell
+    sc create ksh type=kernel binPath="path\to\ksh.sys"
+    ```
+- Start the driver
+    ```shell
+    sc start ksh
+    ```
+- Verify that the service is running
+    ```shell
+    sc query ksh
+    ```
+- Additionally, you can add the driver to the system's boot sequence. Make sure you've tested it first!
+    ```shell
+    sc config ksh start=boot
+    ```
+- When you're bored, here's how you stop the driver and unload it
+    ```shell
+    sc stop ksh
+    sc config ksh start=demand
+    sc delete ksh
+    ```
+
+## Usage
+- Check the driver is ready to receive commands
+    ```shell
+    python ksh.py
+    ```
+- Move a file
+    ```shell
+    python ksh.py mv C:\Users\user\file.txt C:\Users\user\Documents\file.txt
+    ```
+- Copy a file
+    ```shell
+    python ksh.py cp C:\Users\user\file.txt C:\Users\user\Documents\file.txt
+    ```
+- Delete a file
+    ```shell
+    python ksh.py rm C:\Users\user\file.txt
+    ```
+- Kill a process
+    ```shell
+    python ksh.py pkill notepad.exe
+    ```
+
+## Contributing
+
+Contributions are always welcome! Feel free to open an issue or submit a pull request.
+
+### Building
+- First, you need to install Visual Studio. I am using Visual Studio 2019 version 16.11.16. Other versions might work as well. 
+- In order to build the driver component, you also need to install the Windows Driver Kit (WDK).  Here, I have
+  used [WDK for Windows 10, version 2004](https://go.microsoft.com/fwlink/?linkid=2128854).
+- Check out Microsoft's
+  [other-wdk-downloads page](https://learn.microsoft.com/en-us/windows-hardware/drivers/other-wdk-downloads).
+- Load the `driver.sln` solution in Visual Studio.
+- Set the configuration to `Release` and the platform to `x64`.
+- Before building the solution, run `bcdedit.exe -set TESTSIGNING ON` in an elevated command prompt. This allows the
+  driver to be loaded with a real signature, and is going to be automatically signed with a test certificate during the
+  build process. **In case you're using BitLocker, be sure to have your recovery key at hand before rebooting.**
+
+### Formatting
+- C: `clang-format -i -style=Microsoft *.h *.c`
+- Python: `black *.py`
+
+## Disclaimer
+
+1. **Test Mode**  
+    This driver requires the Windows "Test Mode" to be enabled in order to run. It's important to understand
+    that operating in Test Mode can make your system vulnerable. In Test Mode, Windows will load any unsigned driver,
+    which exposes your system to potential threats. Please be cautious and understand the risks before enabling Test Mode.
+2. **Potential System Damage**  
+   Working with kernel-mode drivers carries inherent risks. Always ensure you know what the driver and any associated
+   software are doing.
+3. **Running experiments**  
+   If you are experimenting or are unsure about the effects of this driver, it is highly recommended to run it in a
+   controlled environment, such as a virtual machine.
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
