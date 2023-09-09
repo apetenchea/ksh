@@ -93,7 +93,7 @@ At its core, the project is driven by two primary motivations:
     ```shell
     sc config ksh start=boot
     ```
-- When you're bored, here's how you stop the driver and unload it
+- When you're bored, you can stop the driver and unload it
     ```shell
     sc stop ksh
     sc config ksh start=demand
@@ -101,7 +101,7 @@ At its core, the project is driven by two primary motivations:
     ```
 
 ## Usage
-- Check the driver is ready to receive commands
+- Check the driver status
     ```shell
     python ksh.py
     ```
