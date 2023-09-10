@@ -67,7 +67,7 @@ At its core, the project is driven by two primary motivations:
 - Windows 10 (x64)
 - The driver is only signed with a test certificate, so you will need to enable test mode
     on your machine. This can be done by running the following command in an elevated command prompt:
-    ```
+    ```shell
     bcdedit.exe -set TESTSIGNING ON
     ```
     Note: This will require a reboot. **In case you're using BitLocker, be sure to have your recovery key at hand.**
@@ -154,6 +154,10 @@ py.test test.py
     This driver requires the Windows "Test Mode" to be enabled in order to run. It's important to understand
     that operating in Test Mode can make your system vulnerable. In Test Mode, Windows will load any unsigned driver,
     which exposes your system to potential threats. Please be cautious and understand the risks before enabling Test Mode.
+    After you're done using the driver, don't forget to disable Test Mode:
+    ```shell
+    bcdedit.exe -set TESTSIGNING OFF
+    ```
 2. **Potential System Damage**  
    Working with kernel-mode drivers carries inherent risks. Always ensure you know what the driver and any associated
    software are doing.
