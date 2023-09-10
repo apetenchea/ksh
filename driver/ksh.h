@@ -53,8 +53,12 @@ NTSTATUS RemoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
 
 /*
  * Control code for copying a file.
- * Expects the file names to be passsed as unicode strings.
- * Both file names are passed in one string, separated by "|", e.g. "source|destination".
+ * Expects file names to be passed as wide-strings, preceded by their length (including the NULL-terminating
+ *character).
+ * {
+ *	DWORD size;
+ *	WSTR string;
+ * }
  * Returns 0 on success, 1 on failure.
  */
 #define IOCTL_KSH_COPY_FILE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x803, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
@@ -62,8 +66,12 @@ NTSTATUS CopyFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
 
 /*
  * Control code for moving a file.
- * Expects the file names to be passsed as unicode strings.
- * Both file names are passed in one string, separated by "|", e.g. "source|destination".
+ * Expects file names to be passed as wide-strings, preceded by their length (including the NULL-terminating
+ *character).
+ * {
+ *	DWORD size;
+ *	WSTR string;
+ * }
  * Returns 0 on success, 1 on failure.
  */
 #define IOCTL_KSH_MOVE_FILE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)

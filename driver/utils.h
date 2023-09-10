@@ -3,16 +3,18 @@
 #include <ntifs.h>
 #include <windef.h>
 
-typedef struct _FILE_PAIR_PARAM
+typedef struct _STRINGS_PARAM
 {
+    DWORD dwFirstSize;
     PCWSTR First;
+    DWORD dwSecondSize;
     PCWSTR Second;
-} FILE_PAIR_PARAM;
+} STRINGS_PARAM;
 
 /*
- * The contents of Buffer should be "first|second"
+ * The buffer may contain up to two strings, encoded as [DWORD size][WSTR string]
  */
-FILE_PAIR_PARAM ExtractFilePairFromBuffer(PWSTR Buffer, ULONG uBufferLen);
+STRINGS_PARAM ExtractStringsFromBuffer(PVOID Buffer, ULONG uBufferLen);
 
 /*
  * Copies SourcePath to DestPath.

@@ -1,34 +1,35 @@
 #include "utils.h"
 
-FILE_PAIR_PARAM ExtractFilePairFromBuffer(PWSTR Buffer, ULONG uBufferLen)
+STRINGS_PARAM ExtractStringsFromBuffer(PVOID Buffer, ULONG uBufferLen)
 {
-    FILE_PAIR_PARAM params;
+    STRINGS_PARAM params;
     params.First = NULL;
     params.Second = NULL;
 
-    PWSTR separator = Buffer;
-    ULONG guard = 0;
-
-    // Search for the '|' separator. It must not be one of the last two characters, because otherwise the second file
-    // name would be NULL.
-    while (guard < uBufferLen - 1 && *separator != L'\0' && *separator != L'|')
-    {
-        ++separator;
-        ++guard;
-    }
-    if (guard >= uBufferLen - 1 || *separator != L'|')
+    // Extract first string
+    if (uBufferLen < sizeof(DWORD))
     {
         return params;
     }
-
-    *separator = L'\0';
-    if (*(++separator) == L'\0')
+    params.dwFirstSize = *(DWORD *)Buffer;
+    if (uBufferLen < sizeof(DWORD) + params.dwFirstSize)
     {
         return params;
     }
+    params.First = (PWSTR)((PCHAR)Buffer + sizeof(DWORD));
 
-    params.First = Buffer;
-    params.Second = separator;
+    // Extract second string
+    if (uBufferLen < sizeof(DWORD) * 2 + params.dwFirstSize)
+    {
+        return params;
+    }
+    params.dwSecondSize = *(DWORD *)((PCHAR)Buffer + sizeof(DWORD) + params.dwFirstSize);
+    if (uBufferLen < sizeof(DWORD) * 2 + params.dwFirstSize + params.dwSecondSize)
+    {
+        return params;
+    }
+    params.Second = (PWSTR)((PCHAR)Buffer + sizeof(DWORD) * 2 + params.dwFirstSize);
+
     return params;
 }
 

@@ -3,6 +3,7 @@ from enum import IntEnum
 
 import win32api
 import win32file
+import struct
 
 
 class CtlCode(IntEnum):
@@ -44,7 +45,7 @@ def close_device(handle):
     win32file.CloseHandle(handle)
 
 
-def device_io_ctl(code, input_buffer):
+def device_io_ctl(code, input_buffer, input_size):
     handle = open_device()
     out_buffer = ctypes.c_ulong(0)
     bytes_returned = ctypes.c_ulong(0)
@@ -52,8 +53,8 @@ def device_io_ctl(code, input_buffer):
     status = ctypes.windll.kernel32.DeviceIoControl(
         handle.handle,
         CtlCode.ctl_code(code),
-        ctypes.byref(input_buffer),
-        ctypes.sizeof(input_buffer),
+        input_buffer,
+        input_size,
         ctypes.byref(out_buffer),
         ctypes.sizeof(out_buffer),
         ctypes.byref(bytes_returned),
@@ -75,3 +76,10 @@ def format_dos_device(path):
     if not path.startswith("\\"):
         path = r"\DosDevices\{}".format(path)
     return path
+
+
+def encode_string(s):
+    wchar_s = s.encode("utf-16-le")
+    size = len(wchar_s) + 2
+    buffer = struct.pack("I", size) + wchar_s + b"\x00\x00"
+    return buffer

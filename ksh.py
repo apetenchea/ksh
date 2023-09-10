@@ -2,39 +2,47 @@ import argparse
 import ctypes
 import psutil
 
-from driver import CtlCode, device_io_ctl, format_dos_device
+from driver import CtlCode, device_io_ctl, format_dos_device, encode_string
 
 
 def test():
     input_buffer = ctypes.c_ulong(1)
-    device_io_ctl(CtlCode.IOCTL_KSH_TEST, input_buffer)
+    device_io_ctl(
+        CtlCode.IOCTL_KSH_TEST, ctypes.byref(input_buffer), ctypes.sizeof(input_buffer)
+    )
 
 
 def pkill(pid):
     input_buffer = ctypes.c_ulong(pid)
-    device_io_ctl(CtlCode.IOCTL_KSH_PKILL, input_buffer)
+    device_io_ctl(
+        CtlCode.IOCTL_KSH_PKILL, ctypes.byref(input_buffer), ctypes.sizeof(input_buffer)
+    )
 
 
 def rm(path):
     path = format_dos_device(path)
-    input_buffer = ctypes.create_unicode_buffer(path, len(path))
-    device_io_ctl(CtlCode.IOCTL_KSH_REMOVE_FILE, input_buffer)
+    input_buffer = ctypes.create_unicode_buffer(path)
+    device_io_ctl(
+        CtlCode.IOCTL_KSH_REMOVE_FILE, input_buffer, ctypes.sizeof(input_buffer)
+    )
 
 
 def cp(source, dest):
-    source = format_dos_device(source)
-    dest = format_dos_device(dest)
-    merged = f"{source}|{dest}"
-    input_buffer = ctypes.create_unicode_buffer(merged, len(merged))
-    device_io_ctl(CtlCode.IOCTL_KSH_COPY_FILE, input_buffer)
+    source = encode_string(format_dos_device(source))
+    dest = encode_string(format_dos_device(dest))
+    input_buffer = ctypes.create_string_buffer(source + dest)
+    device_io_ctl(
+        CtlCode.IOCTL_KSH_COPY_FILE, input_buffer, ctypes.sizeof(input_buffer)
+    )
 
 
 def mv(source, dest):
-    source = format_dos_device(source)
-    dest = format_dos_device(dest)
-    merged = f"{source}|{dest}"
-    input_buffer = ctypes.create_unicode_buffer(merged, len(merged))
-    device_io_ctl(CtlCode.IOCTL_KSH_MOVE_FILE, input_buffer)
+    source = encode_string(format_dos_device(source))
+    dest = encode_string(format_dos_device(dest))
+    input_buffer = ctypes.create_string_buffer(source + dest)
+    device_io_ctl(
+        CtlCode.IOCTL_KSH_MOVE_FILE, input_buffer, ctypes.sizeof(input_buffer)
+    )
 
 
 def main(args):

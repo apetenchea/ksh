@@ -201,8 +201,8 @@ NTSTATUS CopyFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
         return STATUS_INVALID_PARAMETER_1;
     }
 
-    FILE_PAIR_PARAM files =
-        ExtractFilePairFromBuffer((PWSTR)pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
+    STRINGS_PARAM files =
+        ExtractStringsFromBuffer(pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
     if (files.First == NULL || files.Second == NULL)
     {
         return STATUS_INVALID_PARAMETER_1;
@@ -223,8 +223,8 @@ NTSTATUS MoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
         return STATUS_INVALID_PARAMETER_1;
     }
 
-    FILE_PAIR_PARAM files =
-        ExtractFilePairFromBuffer((PWSTR)pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
+    STRINGS_PARAM files =
+        ExtractStringsFromBuffer(pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
     if (files.First == NULL || files.Second == NULL)
     {
         return STATUS_INVALID_PARAMETER_1;
