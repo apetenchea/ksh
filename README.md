@@ -30,6 +30,7 @@
     <li><a href="#contributing">Contributing</a></li>
       <ul>
         <li><a href="#building">Building</a></li>
+        <li><a href="#testing">Testing</a></li>
         <li><a href="#formatting">Formatting</a></li>
       </ul>
     <li><a href="#disclaimer">Disclaimer</a></li>
@@ -137,6 +138,11 @@ Contributions are always welcome! Feel free to open an issue or submit a pull re
 - Before building the solution, run `bcdedit.exe -set TESTSIGNING ON` in an elevated command prompt. This allows the
   driver to be loaded with a real signature, and is going to be automatically signed with a test certificate during the
   build process. **In case you're using BitLocker, be sure to have your recovery key at hand before rebooting.**
+
+### Testing
+```shell
+py.test test.py
+```
 
 ### Formatting
 - C: `clang-format -i -style=Microsoft *.h *.c`
