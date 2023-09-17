@@ -11,6 +11,18 @@ typedef struct _STRINGS_PARAM
     PCWSTR Second;
 } STRINGS_PARAM;
 
+typedef struct _REG_PARAM
+{
+    DWORD dwType;
+    DWORD dwSize;
+    PVOID data;
+} REG_PARAM;
+
+/*
+ * The buffer is expected to contain integers, followed by the actual data.
+ */
+REG_PARAM ExtractRegDataFromBuffer(PVOID Buffer, ULONG uBufferLen);
+
 /*
  * The buffer may contain up to two strings, encoded as [DWORD size][WSTR string]
  */

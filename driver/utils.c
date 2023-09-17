@@ -1,5 +1,46 @@
 #include "utils.h"
 
+REG_PARAM ExtractRegDataFromBuffer(PVOID Buffer, ULONG uBufferLen)
+{
+    REG_PARAM params;
+    params.dwType = 0;
+    params.dwSize = 0;
+    params.data = NULL;
+
+    // Extract type and length
+    if (uBufferLen < sizeof(DWORD) * 2)
+    {
+        return params;
+    }
+    params.dwType = ((DWORD *)Buffer)[0];
+    params.dwSize = ((DWORD *)Buffer)[1];
+
+    // Validation
+    if (params.dwSize <= 0)
+    {
+        return params;
+    }
+    if (uBufferLen < sizeof(DWORD) * 2 + params.dwSize)
+    {
+        return params;
+    }
+    if (params.dwType != REG_DWORD && params.dwType != REG_QWORD && params.dwType != REG_SZ)
+    {
+        return params;
+    }
+    if (params.dwType == REG_DWORD && params.dwSize != sizeof(DWORD))
+    {
+        return params;
+    }
+    if (params.dwType == REG_QWORD && params.dwSize != sizeof(DWORD64))
+    {
+        return params;
+    }
+
+    params.data = (PBYTE)Buffer + sizeof(DWORD) * 2;
+    return params;
+}
+
 STRINGS_PARAM ExtractStringsFromBuffer(PVOID Buffer, ULONG uBufferLen)
 {
     STRINGS_PARAM params;

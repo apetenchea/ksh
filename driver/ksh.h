@@ -76,3 +76,18 @@ NTSTATUS CopyFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
  */
 #define IOCTL_KSH_MOVE_FILE CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
 NTSTATUS MoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);
+
+/*
+ * Control code for editing a registry key. If the key is not found, it is automatically created.
+ * Expects the buffer:
+ * - DWORD registry data type
+ * - DWORD size of the data
+ * - PVOID (actual data)
+ * - DWORD size of the registry key
+ * - WSTR registry key
+ * - DWORD size of the registry value
+ * - WSTR registry value
+ * Returns 0 on success, 1 on failure.
+ */
+#define IOCTL_KSH_REGEDIT CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+NTSTATUS Regedit(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer);

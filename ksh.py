@@ -2,7 +2,14 @@ import argparse
 import ctypes
 import psutil
 
-from driver import CtlCode, device_io_ctl, format_dos_device, encode_string
+from driver import (
+    CtlCode,
+    RegType,
+    device_io_ctl,
+    format_dos_device,
+    encode_string,
+    map_registry_path,
+)
 
 
 def test():
@@ -45,6 +52,14 @@ def mv(source, dest):
     )
 
 
+def regedit(reg_type, data, key, value):
+    reg_data = RegType.encode_buffer(reg_type, data)
+    reg_key = encode_string(map_registry_path(key))
+    reg_value = encode_string(value)
+    input_buffer = ctypes.create_string_buffer(reg_data + reg_key + reg_value)
+    device_io_ctl(CtlCode.IOCTL_KSH_REGEDIT, input_buffer, ctypes.sizeof(input_buffer))
+
+
 def main(args):
     if args.command == "test":
         test()
@@ -63,6 +78,8 @@ def main(args):
         cp(args.source, args.destination)
     elif args.command == "mv":
         mv(args.source, args.destination)
+    elif args.command == "regedit":
+        regedit(args.reg_type, args.data, args.key, args.value)
     else:
         raise Exception("Invalid command")
 
@@ -92,5 +109,30 @@ if __name__ == "__main__":
     parser_mv = subparsers.add_parser("mv", help="Move a file")
     parser_mv.add_argument("source", type=str, help="Path of the file to move")
     parser_mv.add_argument("destination", type=str, help="Path of the destination file")
+
+    parser_regedit = subparsers.add_parser(
+        "regedit", help="Edit (or create) registry keys"
+    )
+    parser_regedit.add_argument(
+        "--reg-type",
+        "-t",
+        type=str,
+        required=True,
+        choices=["REG_DWORD", "REG_QWORD", "REG_SZ"],
+        help="Type of the registry key",
+    )
+    parser_regedit.add_argument(
+        "--key", "-k", type=str, required=True, help="Path of the registry key"
+    )
+    parser_regedit.add_argument(
+        "--value", "-v", type=str, required=True, help="Value of the registry key"
+    )
+    parser_regedit.add_argument(
+        "--data",
+        "-d",
+        type=str,
+        required=True,
+        help="Data to store inside the registry key",
+    )
 
     main(parser.parse_args())

@@ -1,5 +1,8 @@
 import ctypes
-from enum import IntEnum
+import getpass
+import winreg
+import win32security
+from enum import IntEnum, Enum, auto
 
 import win32api
 import win32file
@@ -12,6 +15,7 @@ class CtlCode(IntEnum):
     IOCTL_KSH_REMOVE_FILE = 0x802
     IOCTL_KSH_COPY_FILE = 0x803
     IOCTL_KSH_MOVE_FILE = 0x804
+    IOCTL_KSH_REGEDIT = 0x805
 
     @classmethod
     def ctl_code(cls, function):
@@ -24,6 +28,23 @@ class CtlCode(IntEnum):
             | (function << 2)
             | method_buffered
         )
+
+
+class RegType(Enum):
+    REG_SZ = auto()
+    REG_DWORD = auto()
+    REG_QWORD = auto()
+
+    @classmethod
+    def encode_buffer(cls, reg_type, data):
+        if reg_type == cls.REG_SZ.name:
+            return struct.pack("I", winreg.REG_SZ) + encode_string(str(data))
+        elif reg_type == cls.REG_DWORD.name:
+            return struct.pack("IIi", winreg.REG_DWORD, 4, int(data))
+        elif reg_type == cls.REG_QWORD.name:
+            return struct.pack("IIq", winreg.REG_QWORD, 8, int(data))
+        else:
+            raise Exception("Unknown reg type")
 
 
 def open_device():
@@ -66,8 +87,8 @@ def device_io_ctl(code, input_buffer, input_size):
     if not status or out_buffer.value != 0:
         error_code = ctypes.windll.kernel32.GetLastError()
         raise Exception(
-            f"DeviceIoControl failed! Status {status},"
-            f"Output {out_buffer.value}, Code {error_code},"
+            f"DeviceIoControl failed! Status {status}, "
+            f"Output {out_buffer.value}, Code {error_code}, "
             f"Message: {win32api.FormatMessage(error_code)}"
         )
 
@@ -83,3 +104,26 @@ def encode_string(s):
     size = len(wchar_s) + 2
     buffer = struct.pack("I", size) + wchar_s + b"\x00\x00"
     return buffer
+
+
+def map_registry_path(p):
+    if p.startswith(r"\Registry"):
+        return p
+    elif p.startswith("HKEY_LOCAL_MACHINE"):
+        return p.replace("HKEY_LOCAL_MACHINE", r"\Registry\Machine")
+    elif p.startswith("HKEY_USERS"):
+        return p.replace("HKEY_USERS", r"\Registry\User")
+    elif p.startswith("HKEY_CLASSES_ROOT"):
+        return p.replace("HKEY_CLASSES_ROOT", r"\Registry\Machine\Software\Classes")
+    elif p.startswith("HKEY_CURRENT_CONFIG"):
+        return p.replace(
+            "HKEY_CURRENT_CONFIG",
+            r"\Registry\Machine\System\CurrentControlSet\Hardware Profiles\Current",
+        )
+    elif p.startswith("HKEY_CURRENT_USER"):
+        username = getpass.getuser()
+        sid, _, _ = win32security.LookupAccountName("", username)
+        sid = win32security.ConvertSidToStringSid(sid)
+        return p.replace("HKEY_CURRENT_USER", rf"\Registry\User\{sid}")
+    else:
+        raise Exception("Unknown registry path")

@@ -106,6 +106,9 @@ NTSTATUS DispatchDeviceControl(PDEVICE_OBJECT pDeviceObject, PIRP pIrp)
     case IOCTL_KSH_MOVE_FILE:
         status = MoveFile(pIoStackLocation, pSystemBuffer);
         break;
+    case IOCTL_KSH_REGEDIT:
+        status = Regedit(pIoStackLocation, pSystemBuffer);
+        break;
     default:
         status = STATUS_INVALID_PARAMETER_1;
         break;
@@ -241,4 +244,54 @@ NTSTATUS MoveFile(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
         return status;
     }
     return RemoveFileHelper(&uniSrc);
+}
+
+NTSTATUS Regedit(PIO_STACK_LOCATION pIoStackLocation, PVOID pSystemBuffer)
+{
+    if (pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength == 0)
+    {
+        return STATUS_INVALID_PARAMETER_1;
+    }
+
+    // Read registry data parameters
+    REG_PARAM regData =
+        ExtractRegDataFromBuffer(pSystemBuffer, pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength);
+    if (regData.data == NULL)
+    {
+        return STATUS_INVALID_PARAMETER_1;
+    }
+
+    // Read registry key and value parameters
+    ULONG ulRegDataSize = sizeof(DWORD) * 2 + regData.dwSize;
+    ULONG ulRemaining = pIoStackLocation->Parameters.DeviceIoControl.InputBufferLength - ulRegDataSize;
+    PVOID pRegPathStart = (PBYTE)pSystemBuffer + ulRegDataSize;
+    STRINGS_PARAM regPath = ExtractStringsFromBuffer(pRegPathStart, ulRemaining);
+    if (regPath.First == NULL || regPath.Second == NULL)
+    {
+        return STATUS_INVALID_PARAMETER_1;
+    }
+
+    // Open registry key
+    UNICODE_STRING keyName;
+    RtlInitUnicodeString(&keyName, regPath.First);
+
+    OBJECT_ATTRIBUTES objAttrKey;
+    HANDLE hKey;
+    InitializeObjectAttributes(&objAttrKey, &keyName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
+
+    NTSTATUS status = ZwCreateKey(&hKey, KEY_ALL_ACCESS, &objAttrKey, 0, NULL, REG_OPTION_NON_VOLATILE, NULL);
+    if (!NT_SUCCESS(status))
+    {
+        return status;
+    }
+
+    // Write registry data into the value
+    UNICODE_STRING valueName;
+    RtlInitUnicodeString(&valueName, regPath.Second);
+
+    status = ZwSetValueKey(hKey, &valueName, 0, regData.dwType, regData.data, regData.dwSize);
+
+    ZwClose(hKey);
+
+    return status;
 }
