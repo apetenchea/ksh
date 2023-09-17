@@ -60,6 +60,7 @@ At its core, the project is driven by two primary motivations:
     and flexibility of kernel-level operations, bypassing many of the restrictions imposed by
     user-mode utilities.
 - **Process Control:** Tools like `pkill` become more potent.
+- **Editing Registry Keys:** A minimalist `regedit`, from kernel mode.
 
 ## Getting Started
 
@@ -121,6 +122,10 @@ At its core, the project is driven by two primary motivations:
 - Kill a process
     ```shell
     python ksh.py pkill -n notepad.exe
+    ```
+- Edit a registry key
+    ```shell
+    python ksh.py regedit -k "HKEY_LOCAL_MACHINE\SOFTWARE\MyKey" -v "MyValue" -t REG_SZ -d "MyData"
     ```
 
 ## Contributing
